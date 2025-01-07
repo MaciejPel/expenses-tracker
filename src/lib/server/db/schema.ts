@@ -32,10 +32,10 @@ export const expenses = sqliteTable("expense", {
 	userId: text("user_id", { length: 32 })
 		.notNull()
 		.references(() => users.id, { onDelete: "cascade" }),
-	name: text("name").notNull(),
+	name: text("name", { length: 64 }).notNull(),
 	cost: real("cost").notNull(),
 	category: text("category", { enum: ["tax", "grocery", "tech", "gift", "other"] }).notNull(),
-	note: text("note").notNull(),
+	note: text("note", { length: 256 }).notNull(),
 	paidAt: integer("paid_at", { mode: "timestamp" }).notNull(),
 	createdAt: integer("created_at", { mode: "timestamp" })
 		.notNull()

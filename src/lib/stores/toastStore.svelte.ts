@@ -21,6 +21,6 @@ export const addToast = (toast: Toast) => {
 };
 
 export const dismissToast = (id: number) => {
-	const index = toasts.findIndex((entry) => entry.id !== id);
+	const index = toasts.findIndex((entry) => entry.id === id);
 	toasts.splice(index, 1);
 };

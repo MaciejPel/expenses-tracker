@@ -1,18 +1,22 @@
 <script lang="ts">
+	import type { Snippet } from "svelte";
 	import { applyAction, enhance } from "$app/forms";
 	import { invalidateAll } from "$app/navigation";
 	import Modal from "$lib/components/Modal.svelte";
-	import { categoriesTranslations, dateToHumanReadable } from "$lib/utils";
+	import { categoriesTranslations, dateToHumanReadable, errTranslations } from "$lib/utils";
 	import * as m from "$lib/paraglide/messages.js";
 	import { Plus } from "svelte-heros-v2";
+	import { fade } from "svelte/transition";
+	import type { ActionData } from "./dashboard/$types";
+	import { addToast } from "$lib/stores/toastStore.svelte";
 
-	let { children } = $props();
+	let { children, form }: { children: Snippet; form: ActionData } = $props();
 	let modalOpen = $state(false);
 	let processing = $state(false);
 </script>
 
 <Modal bind:open={modalOpen}>
-	<h2 class="text-lg font-semibold">{m.add_new_expense()}</h2>
+	<h2 class="text-lg font-semibold">{m.add_expense()}</h2>
 	<form
 		action="/dashboard?/add"
 		method="POST"
@@ -24,38 +28,82 @@
 				if (result.status === 200) {
 					modalOpen = false;
 					update({ reset: true });
+					addToast({ message: m.add_expense_success(), type: "success" });
 				}
 				await invalidateAll();
 				await applyAction(result);
 			};
 		}}
 	>
-		<input type="text" name="name" class="input input-bordered" placeholder={m.name()} />
+		<input
+			type="text"
+			name="name"
+			class="input input-bordered"
+			class:input-error={form?.field === "name"}
+			placeholder={m.name()}
+			disabled={processing}
+			oninput={() => (form = null)}
+			maxlength="64"
+		/>
 		<div class="join w-full">
 			<input
 				type="number"
 				name="cost"
 				class="input join-item input-bordered w-full grow"
+				class:input-error={form?.field === "cost"}
 				step="0.01"
 				defaultValue="1.00"
 				placeholder={m.cost()}
+				disabled={processing}
+				oninput={() => (form = null)}
 			/>
 			<input
 				type="date"
 				name="paid_at"
 				class="input join-item input-bordered"
+				class:input-error={form?.field === "paid_at"}
 				defaultValue={dateToHumanReadable()}
+				disabled={processing}
+				oninput={() => (form = null)}
 			/>
 		</div>
-		<select name="category" class="select select-bordered">
+		<select
+			name="category"
+			class="select select-bordered"
+			class:select-error={form?.field === "category"}
+			disabled={processing}
+			oninput={() => (form = null)}
+		>
 			{#each Object.entries(categoriesTranslations) as [key, translation]}
 				<option value={key}>{translation()}</option>
 			{/each}
 		</select>
-		<textarea name="note" class="textarea textarea-bordered" placeholder={m.note()}></textarea>
+		<textarea
+			name="note"
+			class="textarea textarea-bordered"
+			class:textarea-error={form?.field === "note"}
+			placeholder={m.note()}
+			disabled={processing}
+			maxlength="256"
+			oninput={() => (form = null)}
+		></textarea>
+		{#if form?.field && form?.reason}
+			<div class="text-sm leading-none text-error" transition:fade>
+				{errTranslations[form.field][form.reason]()}
+			</div>
+		{/if}
 		<div class="join mt-2 flex justify-end">
-			<button type="reset" class="btn btn-error join-item self-end">{m.reset()}</button>
-			<button type="submit" class="btn btn-primary join-item self-end"> {m.save()} </button>
+			<button
+				type="reset"
+				class="btn btn-error join-item self-end"
+				disabled={processing}
+				onclick={() => (form = null)}
+			>
+				{m.reset()}
+			</button>
+			<button type="submit" class="btn btn-primary join-item self-end" disabled={processing}>
+				{m.save()}
+			</button>
 		</div>
 	</form>
 </Modal>

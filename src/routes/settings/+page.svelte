@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { page } from "$app/state";
 	import { goto, invalidateAll } from "$app/navigation";
+	import { fade } from "svelte/transition";
+	import { applyAction, enhance } from "$app/forms";
+	import type { ActionData } from "./$types";
 	import { i18n } from "$lib/i18n";
 	import * as m from "$lib/paraglide/messages.js";
 	import {
@@ -10,9 +13,10 @@
 	} from "$lib/paraglide/runtime";
 	import { themes } from "$lib/constants";
 	import Modal from "$lib/components/Modal.svelte";
-	import { applyAction, enhance } from "$app/forms";
 	import { addToast } from "$lib/stores/toastStore.svelte";
+	import { errTranslations } from "$lib/utils";
 
+	let { form }: { form: ActionData } = $props();
 	let currentTheme = $state("");
 	let modalOpen = $state(false);
 
@@ -58,19 +62,22 @@
 			class="flex flex-col gap-4"
 			use:enhance={() => {
 				return async ({ result, update }) => {
-					if (result.status === 200) {
+					if (result.status === 302) {
 						modalOpen = false;
 						update({ reset: true });
-						addToast({ message: "account deleted", type: "success" });
-						goto("/login");
+						addToast({ message: m.settings_account_deleted(), type: "success" });
 					}
 					await invalidateAll();
 					await applyAction(result);
 				};
 			}}
 		>
-			<input type="hidden" name="id" value={page.data.user.id} />
 			<div>{m.settings_delete_confirmation()}</div>
+			{#if form?.field && form?.reason}
+				<div class="text-sm leading-none text-error" transition:fade>
+					{errTranslations[form.field][form.reason]()}
+				</div>
+			{/if}
 			<button type="submit" class="btn btn-error join-item self-end">{m.confirm()}</button>
 		</form>
 	</Modal>

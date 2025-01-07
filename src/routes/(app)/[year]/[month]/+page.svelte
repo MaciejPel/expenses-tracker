@@ -8,9 +8,16 @@
 	import Modal from "$lib/components/Modal.svelte";
 	import { addToast } from "$lib/stores/toastStore.svelte";
 	import * as m from "$lib/paraglide/messages.js";
-	import { categoriesTranslations, dateToHumanReadable, numberToMonth } from "$lib/utils";
+	import {
+		categoriesTranslations,
+		dateToHumanReadable,
+		errTranslations,
+		numberToMonth,
+	} from "$lib/utils";
+	import type { ActionData } from "../../dashboard/$types";
 
-	let { data }: { data: PageData } = $props();
+	let { data, form }: { data: PageData; form: ActionData } = $props();
+	let processing = $state(false);
 	let modalState = $state({
 		edit: false,
 		delete: false,
@@ -39,6 +46,7 @@
 				if (result.status === 200) {
 					modalState.edit = false;
 					update({ reset: true });
+					addToast({ message: m.edit_expense_success(), type: "success" });
 				}
 				await invalidateAll();
 				await applyAction(result);
@@ -50,26 +58,42 @@
 			type="text"
 			name="name"
 			class="input input-bordered"
+			class:input-error={form?.field === "name"}
 			defaultValue={currentExpense?.name}
 			placeholder={m.name()}
+			disabled={processing}
+			oninput={() => (form = null)}
+			maxlength="64"
 		/>
 		<div class="join w-full">
 			<input
 				type="number"
 				name="cost"
 				class="input join-item input-bordered w-full grow"
+				class:input-error={form?.field === "cost"}
 				step="0.01"
 				defaultValue={currentExpense?.cost?.toFixed(2)}
 				placeholder={m.cost()}
+				disabled={processing}
+				oninput={() => (form = null)}
 			/>
 			<input
 				type="date"
 				name="paid_at"
 				class="input join-item input-bordered"
+				class:input-error={form?.field === "paid_at"}
 				defaultValue={dateToHumanReadable(currentExpense?.paidAt)}
+				disabled={processing}
+				oninput={() => (form = null)}
 			/>
 		</div>
-		<select name="category" class="select select-bordered">
+		<select
+			name="category"
+			class="select select-bordered"
+			class:select-error={form?.field === "category"}
+			disabled={processing}
+			oninput={() => (form = null)}
+		>
 			{#each Object.entries(categoriesTranslations) as [key, translation]}
 				<option selected={currentExpense?.category === key} value={key}>{translation()}</option>
 			{/each}
@@ -79,7 +103,15 @@
 			class="textarea textarea-bordered"
 			placeholder={m.note()}
 			defaultValue={currentExpense?.note}
+			disabled={processing}
+			maxlength="256"
+			oninput={() => (form = null)}
 		></textarea>
+		{#if form?.field && form?.reason}
+			<div class="text-sm leading-none text-error" transition:fade>
+				{errTranslations[form.field][form.reason]()}
+			</div>
+		{/if}
 		<div class="join mt-2 flex justify-end">
 			<button type="reset" class="btn btn-error join-item self-end">{m.reset()}</button>
 			<button type="submit" class="btn btn-primary join-item self-end">{m.save()}</button>
@@ -97,7 +129,7 @@
 				if (result.status === 200) {
 					modalState.delete = false;
 					update({ reset: true });
-					addToast({ message: "expense deleted", type: "success" });
+					addToast({ message: m.delete_expense_success(), type: "success" });
 				}
 				await invalidateAll();
 				await applyAction(result);
@@ -132,7 +164,7 @@
 			</thead>
 			<tbody>
 				{#each data.expenses as entry}
-					<tr class="hover" transition:fade>
+					<tr class="hover">
 						<td class="text-nowrap">{entry.name}</td>
 						<td>{entry.cost?.toFixed(2)} $</td>
 						<td>{categoriesTranslations[entry.category]()}</td>

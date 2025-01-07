@@ -29,12 +29,12 @@ export const actions = {
 
 		const existingUser = await db.select().from(users).where(eq(users.email, email.toLowerCase()));
 		if (!existingUser.length) {
-			return fail(400, { field: "all", reason: "general" });
+			return fail(400, { field: "other", reason: "general" });
 		}
 
 		const validPassword = await new Argon2id().verify(existingUser[0].passwordHash, password);
 		if (!validPassword) {
-			return fail(400, { field: "all", reason: "general" });
+			return fail(400, { field: "other", reason: "general" });
 		}
 
 		const token = generateSessionToken();
@@ -43,14 +43,6 @@ export const actions = {
 
 		const redirectCookie = event.cookies.get("redirect");
 		event.cookies.delete("redirect", { path: "/" });
-
-		event.cookies.set("lang", existingUser[0].lang, {
-			path: "/",
-			httpOnly: false,
-			secure: false,
-			sameSite: false,
-			maxAge: 60 * 60 * 24 * 365,
-		});
 
 		redirect(302, redirectCookie || "/");
 	},

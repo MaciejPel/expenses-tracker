@@ -7,7 +7,7 @@ export const load = () => {
 
 export const actions = {
 	default: async (event) => {
-		if (!event.locals.session) return fail(401);
+		if (!event.locals.session) return fail(401, { field: "other", reaason: "unauthorized" });
 
 		await invalidateSession(event.locals.session.id);
 		deleteSessionTokenCookie(event);

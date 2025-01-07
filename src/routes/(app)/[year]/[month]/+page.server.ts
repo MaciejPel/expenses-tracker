@@ -10,7 +10,7 @@ export const load = async ({ locals, params }) => {
 	if (!year || Number.isNaN(Number(year)) || !/^\d{4}$/.test(year))
 		error(400, { message: "invalid-year" });
 	if (!month || Number.isNaN(Number(month)) || !/^(1[0-2]|[1-9])$/.test(month))
-		error(400, { message: "invalid-year" });
+		error(400, { message: "invalid-month" });
 	const [y, m] = [Number(year), Number(month)];
 
 	const data = await db

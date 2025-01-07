@@ -1,21 +1,20 @@
-import { fail, type Actions } from "@sveltejs/kit";
+import { fail, redirect, type Actions } from "@sveltejs/kit";
 import { db } from "$lib/server/db/index.js";
 import { users } from "$lib/server/db/schema";
 import { eq } from "drizzle-orm/mysql-core/expressions";
+import { deleteSessionTokenCookie, invalidateSession } from "$lib/server/auth";
 
 export const actions = {
 	delete: async (event) => {
-		if (!event.locals.user) return fail(401, { message: "unauthorized" });
+		if (!event.locals.user || !event.locals.session)
+			return fail(401, { field: "other", reason: "unauthorized" });
 
-		const formData = await event.request.formData();
-		const id = formData.get("id");
+		const deleteResult = await db.delete(users).where(eq(users.id, event.locals.user.id));
 
-		if (typeof id !== "string") {
-			return fail(400, { field: "id", reason: "requirements" });
-		}
+		await invalidateSession(event.locals.session.id);
+		deleteSessionTokenCookie(event);
 
-		const deleteResult = await db.delete(users).where(eq(users.id, id));
-
-		return { success: deleteResult.rowsAffected === 1 };
+		if (!deleteResult.rowsAffected) return fail(404, { field: "other", reason: "not-found" });
+		redirect(302, "/sign-in");
 	},
 } satisfies Actions;

@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { enhance } from "$app/forms";
+	import { applyAction, enhance } from "$app/forms";
 	import { page } from "$app/state";
 	import * as m from "$lib/paraglide/messages";
+	import { addToast } from "$lib/stores/toastStore.svelte";
 	import {
 		ArrowRightOnRectangle,
 		ArrowRightStartOnRectangle,
@@ -19,7 +20,21 @@
 				<span class="hidden sm:block">{m.settings()}</span>
 			</a>
 			{#if page.data.user}
-				<form method="post" use:enhance action="/sign-out" class="flex p-0">
+				<form
+					method="post"
+					use:enhance={() => {
+						return async ({ result }) => {
+							if (result.status === 302) {
+								addToast({ message: m.signOut_success(), type: "info" });
+							} else if (result.status === 401) {
+								addToast({ message: m.something_went_wrong(), type: "error" });
+							}
+							await applyAction(result);
+						};
+					}}
+					action="/sign-out"
+					class="flex p-0"
+				>
 					<button class="btn btn-ghost btn-sm flex grow gap-2">
 						<ArrowRightStartOnRectangle variation="solid" class="h-5 w-5" />
 						{m.signOut()}

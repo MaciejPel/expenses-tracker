@@ -21,7 +21,7 @@
 				class="flex flex-col gap-4 rounded-box bg-base-300 p-4 transition-colors hover:bg-base-200"
 				in:fade
 			>
-				<div class="">{entry.total.toFixed(2)} $</div>
+				<div>{entry.total.toFixed(2)} $</div>
 				<div class="self-end text-2xl font-bold">{entry.year}</div>
 			</a>
 		{/each}

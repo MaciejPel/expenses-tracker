@@ -4,21 +4,13 @@
 	import { fade } from "svelte/transition";
 	import type { ActionData } from "./$types";
 	import { Eye, EyeSlash } from "svelte-heros-v2";
+	import { addToast } from "$lib/stores/toastStore.svelte";
+	import { errTranslations } from "$lib/utils";
 
 	let { form }: { form: ActionData } = $props();
 	let processing = $state(false);
 	let passwordToggle = $state(false);
 	let passwordRepeatToggle = $state(false);
-
-	const errTranslations: { [key: string]: { [key: string]: () => string } } = {
-		// email: {
-		// 	requirements: m.form_error_email_requirements,
-		// 	taken: m.form_error_email_taken,
-		// },
-		// password: { requirements: m.form_error_password_requirements },
-		// "repeat-password": { "no-match": m.form_error_repeat_password_no_match },
-		// tos: { "no-accept": m.form_error_tos_no_accept },
-	};
 </script>
 
 <svelte:head>
@@ -34,6 +26,9 @@
 				processing = true;
 				return async ({ result }) => {
 					processing = result.status === 302;
+					if (result.status === 200) {
+						addToast({ message: m.signUp_success(), type: "success" });
+					}
 					await applyAction(result);
 				};
 			}}
