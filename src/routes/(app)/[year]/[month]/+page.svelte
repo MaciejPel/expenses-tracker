@@ -22,14 +22,21 @@
 		edit: false,
 		delete: false,
 	});
+	let filter: string = $state("all");
 	let currentExpense: {
 		id?: number;
 		name?: string;
 		cost?: number;
-		category?: "tax" | "grocery" | "tech" | "gift" | "other";
+		category?: "tax" | "subscription" | "grocery" | "tech" | "gift" | "other";
 		note?: string;
 		paidAt?: Date;
 	} = $state({});
+	const filteredData = $derived(
+		data.expenses.filter((v) => {
+			if (filter === "all") return true;
+			return v.category === filter;
+		}),
+	);
 </script>
 
 <svelte:head>
@@ -142,17 +149,27 @@
 	</form>
 </Modal>
 <div class="flex flex-col gap-4">
-	<div class="flex items-center gap-4">
-		<a href="/{page.params.year}" class="btn btn-accent btn-sm">
-			<ArrowUturnLeft class="h-4 w-4" />
-		</a>
-		<h2 class="text-2xl font-bold">
-			{page.params.year}
-			{numberToMonth[Number(page.params.month)]()}
-		</h2>
+	<div class="flex flex-wrap justify-between gap-4">
+		<div class="flex items-center gap-4">
+			<a href="/{page.params.year}" class="btn btn-accent btn-sm">
+				<ArrowUturnLeft class="h-4 w-4" />
+			</a>
+			<h2 class="text-2xl font-bold">
+				{page.params.year}
+				{numberToMonth[Number(page.params.month)]()}
+			</h2>
+		</div>
+		<select bind:value={filter} class="select select-bordered w-full sm:w-auto">
+			<option value="all">{m.all()}</option>
+			{#each Object.entries(categoriesTranslations) as [key, translation]}
+				<option selected={currentExpense?.category === key} value={key}>
+					{translation()}
+				</option>
+			{/each}
+		</select>
 	</div>
 	<div class="w-full overflow-x-auto">
-		<table class="table table-lg w-full bg-base-300">
+		<table class="table table-lg w-full text-nowrap bg-base-300">
 			<thead>
 				<tr>
 					<th>{m.name()}</th>
@@ -163,13 +180,13 @@
 				</tr>
 			</thead>
 			<tbody>
-				{#each data.expenses as entry}
+				{#each filteredData as entry}
 					<tr class="hover">
-						<td class="text-nowrap">{entry.name}</td>
+						<td>{entry.name}</td>
 						<td>{entry.cost?.toFixed(2)} $</td>
 						<td>{categoriesTranslations[entry.category]()}</td>
-						<td class="text-nowrap">{dateToHumanReadable(entry.paidAt)}</td>
-						<td>
+						<td>{dateToHumanReadable(entry.paidAt)}</td>
+						<td class="flex items-center justify-center gap-2">
 							<button
 								class="btn btn-secondary btn-sm"
 								onclick={() => {
@@ -193,7 +210,7 @@
 				{/each}
 				<tr class="hover font-bold">
 					<td>{m.total()}:</td>
-					<td>{data.expenses.reduce((acc, v) => acc + v.cost, 0).toFixed(2)} $</td>
+					<td>{filteredData.reduce((acc, v) => acc + v.cost, 0).toFixed(2)} $</td>
 					<td></td>
 					<td></td>
 					<td></td>

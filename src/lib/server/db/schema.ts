@@ -34,7 +34,9 @@ export const expenses = sqliteTable("expense", {
 		.references(() => users.id, { onDelete: "cascade" }),
 	name: text("name", { length: 64 }).notNull(),
 	cost: real("cost").notNull(),
-	category: text("category", { enum: ["tax", "grocery", "tech", "gift", "other"] }).notNull(),
+	category: text("category", {
+		enum: ["tax", "subscription", "grocery", "tech", "gift", "other"],
+	}).notNull(),
 	note: text("note", { length: 256 }).notNull(),
 	paidAt: integer("paid_at", { mode: "timestamp" }).notNull(),
 	createdAt: integer("created_at", { mode: "timestamp" })

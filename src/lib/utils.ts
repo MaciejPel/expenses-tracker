@@ -18,6 +18,7 @@ export const numberToMonth: { [key: number]: () => string } = {
 export const categoriesTranslations: { [key: string]: () => string } = {
 	grocery: m.grocery,
 	tax: m.tax,
+	subscription: m.subscription,
 	tech: m.tech,
 	gift: m.gift,
 	other: m.other,

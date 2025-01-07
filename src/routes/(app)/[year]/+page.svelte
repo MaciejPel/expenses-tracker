@@ -20,7 +20,7 @@
 		<h2 class="text-2xl font-bold">{page.params.year}</h2>
 	</div>
 	<div class="w-full overflow-x-auto">
-		<table class="table table-lg w-full bg-base-300">
+		<table class="table table-lg w-full text-nowrap bg-base-300">
 			<thead>
 				<tr>
 					<th>{m.month()}</th>
