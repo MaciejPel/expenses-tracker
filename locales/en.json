@@ -61,7 +61,7 @@
 	"signUp_have_account": "I already have an account",
 	"signUp_success": "An account has been created",
 	"signIn_no_account": "Don't have an account? Create one",
-	"signIn_success": "Logged on successfully",
+	"signIn_success": "Signed in successfully",
 	"signOut_success": "Successfully signed out",
 	"dashboard_no_expenses": "No expenses",
 	"settings_delete_account": "Delete account",
