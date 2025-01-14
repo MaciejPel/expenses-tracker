@@ -1,4 +1,4 @@
-# expense tracker
+# expenses tracker
 
 Simple app for expenses tracking
 
