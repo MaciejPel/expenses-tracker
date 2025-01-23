@@ -159,12 +159,10 @@
 				{numberToMonth[Number(page.params.month)]()}
 			</h2>
 		</div>
-		<select bind:value={filter} class="select select-bordered w-full sm:w-auto">
+		<select name="filter" bind:value={filter} class="select select-bordered w-full sm:w-auto">
 			<option value="all">{m.all()}</option>
 			{#each Object.entries(categoriesTranslations) as [key, translation]}
-				<option selected={currentExpense?.category === key} value={key}>
-					{translation()}
-				</option>
+				<option value={key}>{translation()}</option>
 			{/each}
 		</select>
 	</div>
@@ -183,7 +181,7 @@
 				{#each filteredData as entry}
 					<tr class="hover">
 						<td>{entry.name}</td>
-						<td>{entry.cost?.toFixed(2)} $</td>
+						<td>{entry.cost.toFixed(2)} $</td>
 						<td>{categoriesTranslations[entry.category]()}</td>
 						<td>{dateToHumanReadable(entry.paidAt)}</td>
 						<td class="flex items-center justify-center gap-2">
